@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-
+#Sujet abstrait qui gère les abonnements et les notifications
 class Sujet(ABC):
 
     def __init__(self):

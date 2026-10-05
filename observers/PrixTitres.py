@@ -1,6 +1,6 @@
-from observateurs.observateur import Observateur
+from observers.observateur import Observateur
 
-
+#Observateur qui affiche le prix et la variation de chaque titre
 class PrixTitres(Observateur):
 
     def __init__(self, labels_prix):

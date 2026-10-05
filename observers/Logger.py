@@ -1,7 +1,7 @@
 from datetime import datetime
-from observateurs.observateur import Observateur
+from observers.observateur import Observateur
 
-
+#Observateur non visuel qui enregistre les données dans le fichier CSV (journalisation)
 class Logger(Observateur):
 
     def actualiser(self, sujet) -> None:
