@@ -317,7 +317,12 @@ class Dashboard(tk.Tk):
 
         # Récupère les valeurs entrées par l'utilisateur
         ticker = self.entry_ticker.get().strip().upper()
-
+        if not ticker:
+            self.label_statut.config(
+                text="Veuillez entrer un ticker.",
+                fg="red"
+            )
+            return
         try:
             quantite = int(
                 self.entry_quantite.get()
