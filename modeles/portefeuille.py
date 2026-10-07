@@ -53,14 +53,20 @@ class Portefeuille(Sujet):
         self.prix_actuels = {}
 
         for ticker in self.titres:
-            prix, ouverture = self.recuperer_prix(ticker)
+            try:
+                prix, ouverture = self.recuperer_prix(ticker)
 
-            self.prix_actuels[ticker] = (
-                prix,
-                ouverture
-            )
+                self.prix_actuels[ticker] = (
+                    prix,
+                    ouverture
+                )
 
-        # Avertir tous les observateurs
+            except Exception as e:
+                print(
+                    f"Erreur lors de la récupération de {ticker}: {e}"
+                )
+
+        # Avertir les observateurs avec les données récupérées
         self.notifier()
 
     def ajouter_titre(
