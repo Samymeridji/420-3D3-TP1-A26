@@ -199,6 +199,15 @@ class Dashboard(tk.Tk):
             padx=5
         )
 
+        # Seuils d'alerte (facultatifs si on modifie seulement la quantité)
+        tk.Label(frame_modification, text="Seuil bas:").pack(side=tk.LEFT)
+        self.entry_nouveau_seuil_bas = tk.Entry(frame_modification, width=7)
+        self.entry_nouveau_seuil_bas.pack(side=tk.LEFT, padx=5)
+
+        tk.Label(frame_modification, text="Seuil haut:").pack(side=tk.LEFT)
+        self.entry_nouveau_seuil_haut = tk.Entry(frame_modification, width=7)
+        self.entry_nouveau_seuil_haut.pack(side=tk.LEFT, padx=5)
+
         tk.Button(
             frame_modification,
             text="Modifier",
@@ -374,45 +383,53 @@ class Dashboard(tk.Tk):
             )
 
     def modifier_quantite(self):
-
-        # Récupère le titre sélectionné
+        # Modifie la quantité et/ou les deux seuils du titre sélectionné
         ticker = self._ticker_selectionne()
-
         if ticker is None:
-            self.label_statut.config(
-                text="Sélectionnez un titre.",
-                fg="orange"
-            )
+            self.label_statut.config(text="Sélectionnez un titre.", fg="orange")
             return
 
         try:
-            quantite = int(
-                self.entry_nouvelle_quantite.get()
-            )
+            texte_quantite = self.entry_nouvelle_quantite.get().strip()
+            texte_bas = self.entry_nouveau_seuil_bas.get().strip()
+            texte_haut = self.entry_nouveau_seuil_haut.get().strip()
 
-            # Modifie la quantité dans le portefeuille
-            self.portefeuille.modifier_quantite(
-                ticker,
-                quantite
-            )
+            if not texte_quantite and not texte_bas and not texte_haut:
+                raise ValueError("Entrez une quantité ou les deux seuils.")
+
+            # Valider tous les champs avant de modifier le portefeuille
+            quantite = None
+            if texte_quantite:
+                quantite = int(texte_quantite)
+                if quantite <= 0:
+                    raise ValueError("La quantité doit être supérieure à 0.")
+
+            seuil_bas = None
+            seuil_haut = None
+            if texte_bas or texte_haut:
+                if not texte_bas or not texte_haut:
+                    raise ValueError("Vous devez entrer les deux seuils.")
+                seuil_bas = float(texte_bas)
+                seuil_haut = float(texte_haut)
+                if not (0 < seuil_bas < seuil_haut < float('inf')):
+                    raise ValueError("Les seuils doivent être positifs et le seuil bas inférieur au seuil haut.")
+
+            # Ces méthodes appellent notifier() dans Portefeuille
+            if quantite is not None:
+                self.portefeuille.modifier_quantite(ticker, quantite)
+            if seuil_bas is not None:
+                self.portefeuille.modifier_seuils(ticker, seuil_bas, seuil_haut)
 
             self._rafraichir_liste()
+            self.entry_nouvelle_quantite.delete(0, tk.END)
+            self.entry_nouveau_seuil_bas.delete(0, tk.END)
+            self.entry_nouveau_seuil_haut.delete(0, tk.END)
+            self.label_statut.config(text=f"{ticker} modifié.", fg="green")
 
-            self.entry_nouvelle_quantite.delete(
-                0,
-                tk.END
-            )
-
-            self.label_statut.config(
-                text=f"{ticker} modifié.",
-                fg="green"
-            )
-
+        except (ValueError, OverflowError) as erreur:
+            self.label_statut.config(text=f"Erreur : {erreur}", fg="red")
         except Exception as erreur:
-            self.label_statut.config(
-                text=f"Erreur : {erreur}",
-                fg="red"
-            )
+            self.label_statut.config(text=f"Erreur : {erreur}", fg="red")
 
     def retirer_titre(self):
 
